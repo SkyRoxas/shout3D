@@ -3,6 +3,7 @@
 
     const gulp = require('gulp')
     const watch = require('gulp-watch')
+    const webpack = require('webpack-stream')
     const sass = require('gulp-sass')
     const browserSync = require('browser-sync').create()
     const imagemin = require('gulp-imagemin')
@@ -10,14 +11,14 @@
 
     const config = {
         src: {
-            js: './src/js/*.js',
-            sass: './src/sass/*.sass',
+            js: './src/app/**/*.js',
+            sass: './src/sass/**/*.sass',
             html: './src/html/*.html',
-            image: './src/images/*.*'
+            image: './src/images**//*.*'
         },
         dest: {
-            js: './dest/public/js',
-            sass: './dest/public/css',
+            js: './dest/js',
+            sass: './dest/css',
             html: './dest/',
             image: './dest/images'
         }
@@ -26,6 +27,7 @@
     const minifyJS = function() {
         return gulp
             .src(config.src.js)
+            .pipe(webpack( require('./webpack.config.js') ))
             .pipe(gulp.dest(config.dest.js))
             .pipe(browserSync.reload({ stream: true, once: true }))
     }
@@ -62,11 +64,11 @@
         minifyHTML()
     })
 
-    gulp.task('imagemin',function(){
+    gulp.task('imagemin', function(){
       imageMin()
     })
 
-    gulp.task('minify', ['minifyjs', 'minifysass', 'minifyHTML','imagemin'])
+    gulp.task('minify', ['minifyjs', 'minifysass', 'minifyHTML', 'imagemin'])
 
     gulp.task('browser-sync', function() {
         browserSync.init({
