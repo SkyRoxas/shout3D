@@ -7,19 +7,20 @@
   const sass = require('gulp-sass')
   const browserSync = require('browser-sync').create()
   const imagemin = require('gulp-imagemin')
+  const pug = require('gulp-pug')
 
   const config = {
     src: {
       js: './src/app/**/*.js',
       sass: './src/sass/**/*.sass',
-      html: './src/html/*.html',
-      image: './src/images**//*.*'
+      html: './src/html/**/*.pug',
+      image: './src/images/**/*.*'
     },
     dest: {
       js: './dest/js',
-      sass: './dest/css/style',
+      sass: './dest/css/',
       html: './dest/',
-      image: './dest/'
+      image: './dest/images'
     }
   }
 
@@ -28,15 +29,15 @@
   }
 
   const minifySASS = function() {
-    return gulp.src(config.src.sass).pipe(sass({outputStyle: 'compressed'})).pipe(gulp.dest(config.dest.sass)).pipe(browserSync.stream())
+    return gulp.src(config.src.sass).pipe(sass({outputStyle: 'compressed'}).on('error', sass.logError)).pipe(gulp.dest(config.dest.sass)).pipe(browserSync.stream())
   }
 
   const minifyHTML = function() {
-    return gulp.src(config.src.html).pipe(gulp.dest(config.dest.html)).pipe(browserSync.reload({stream: true, once: true}))
+    return gulp.src(config.src.html).pipe(pug().on('error', function(err){console.log(err)})).pipe(gulp.dest(config.dest.html)).pipe(browserSync.stream())
   }
 
   const imageMin = function() {
-    return gulp.src(config.src.image).pipe(imagemin({progressive: true})).pipe(gulp.dest(config.dest.image))
+    return gulp.src(config.src.image).pipe(imagemin({progressive: true})).pipe(gulp.dest(config.dest.image)).pipe(browserSync.stream())
   }
 
   gulp.task('minifyjs', function() {
@@ -75,7 +76,7 @@
         minifyJS()
       } else if (/\.sass$/i.test(event.path)) {
         minifySASS()
-      } else if (/\.html$/i.test(event.path)) {
+      } else if (/\.pug$/i.test(event.path)) {
         minifyHTML()
       } else {
         imageMin()
