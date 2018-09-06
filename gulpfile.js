@@ -7,13 +7,12 @@
   const sass = require('gulp-sass')
   const browserSync = require('browser-sync').create()
   const imagemin = require('gulp-imagemin')
-  const pug = require('gulp-pug')
 
   const config = {
     src: {
       js: './src/app/**/*.js',
       sass: './src/sass/**/*.sass',
-      html: './src/html/**/*.pug',
+      html: './src/html/**/*.html',
       image: './src/images/**/*.*'
     },
     dest: {
@@ -33,7 +32,7 @@
   }
 
   const minifyHTML = function() {
-    return gulp.src(config.src.html).pipe(pug().on('error', function(err){console.log(err)})).pipe(gulp.dest(config.dest.html)).pipe(browserSync.stream())
+    return gulp.src(config.src.html).pipe(gulp.dest(config.dest.html)).pipe(browserSync.stream())
   }
 
   const imageMin = function() {
@@ -76,7 +75,7 @@
         minifyJS()
       } else if (/\.sass$/i.test(event.path)) {
         minifySASS()
-      } else if (/\.pug$/i.test(event.path)) {
+      } else if (/\.html$/i.test(event.path)) {
         minifyHTML()
       } else {
         imageMin()
