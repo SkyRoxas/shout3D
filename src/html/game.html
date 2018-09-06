@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        body { overflow: hidden; margin: 0; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/92/three.min.js"></script>
+    <script src="https://threejs.org/examples/js/loaders/OBJLoader.js"></script>
+    <script src="https://threejs.org/examples/js/loaders/MTLLoader.js"></script>
+</head>
+<body></body>
+
+<script>
+
+    let width = 1280
+    let height = 720
+
+    let scene = new THREE.Scene()
+    let camera = new THREE.PerspectiveCamera(90, width / height, 0.1, 1000)
+
+    camera.position.set(0, 4, -5)
+    camera.lookAt(new THREE.Vector3(0, 4, 0))
+
+    let renderer = new THREE.WebGLRenderer({ antialias: true })
+    let ambientLight
+    let light
+    let clock = new THREE.Clock()
+
+    ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
+    scene.add(ambientLight)
+
+    light = new THREE.PointLight(0xffffff, 0.5,  18)
+    light.position.set(-3, 6, -3)
+    light.castShadow = true
+    light.shadow.camera.near = 0.1
+    light.shadow.camera.far = 25
+
+    renderer.setSize(width, height)
+    document.body.appendChild( renderer.domElement )
+
+    let keypress = []
+    document.addEventListener('keydown', (e) => {keypress[e.keyCode] = true})
+    document.addEventListener('keyup', (e) => {keypress[e.keyCode] = false})
+
+    let meshs = {
+        rootSquare: new THREE.Mesh(new THREE.BoxGeometry(50, 25, 50, 10, 10, 10), new THREE.MeshBasicMaterial({color: "gray",wireframe: true})),
+        floor: new THREE.Mesh(new THREE.PlaneGeometry(50, 50, 10, 10), new THREE.MeshPhongMaterial({color: 0xffffff, wireframe: false})),
+        monster: new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: false}))
+    }
+
+    let models = [
+        { name: 'uzi', obj: './models/uziGold.obj', mtl: './models/uziGold.mtl', mesh: null, castShadow: true }
+    ]
+
+    let animates = []
+
+    class ModelManger {
+        constructor(models){
+            this.models = models || []
+            this.meshs = []
+            this.manger = new THREE.LoadingManager()
+            this.loader(models)
+        }
+
+        loader(models){
+            this.models.forEach(model => {
+                let mtlLoader = new THREE.MTLLoader(this.manger)
+                let objLoader = new THREE.OBJLoader(this.manger)
+                mtlLoader.load(model.mtl, (mtl) => {
+                    mtl.preload()
+                    objLoader.setMaterials(mtl)
+                    objLoader.load(model.obj, (mesh) => {
+                      scene.add(mesh)
+                      this.meshs[model.name] = mesh
+                    })
+                })
+            })
+        }
+    }
+
+    class Player {
+        constructor(opt = {}){
+            this.group = opt.group || new THREE.Group()
+
+            // option
+            this.speed = opt.speed || 0.2
+            this.turnSpeed = opt.turnSpeed || Math.PI*0.02
+            this.turnDeg = opt.turnDeg ? THREE.Math.degToRad(opt.turnDeg) : THREE.Math.degToRad(45)
+
+            // control
+            this.keyUp = opt.keyUp || 87
+            this.keyDown = opt.keyDown || 83
+            this.keyLeft = opt.keyLeft || 65
+            this.keyRight = opt.keyRight || 68
+            this.keyTurnUp = opt.keyTurnUp || 38
+            this.keyTurnDown = opt.keyTurnDown || 40
+            this.keyTurnLeft = opt.keyTurnLeft || 37
+            this.keyTurnRight = opt.keyTurnRight || 39
+        }
+
+        init() {
+            // const {group} = this
+            // group.add(camera)
+            // scene.add(group)
+        }
+
+        animate() {
+            const {keyUp, keyDown, keyLeft, keyRight, keyTurnUp, keyTurnDown, keyTurnLeft, keyTurnRight} = this
+            const {speed, turnDeg, turnSpeed} = this
+            const {group} = this
+
+            // w
+            if(keypress[87]){
+                camera.position.x -= Math.sin(camera.rotation.y) * speed
+                camera.position.z -= -Math.cos(camera.rotation.y) * speed
+            }
+
+            // s
+            if(keypress[83]){
+                camera.position.x += Math.sin(camera.rotation.y) * speed
+                camera.position.z += -Math.cos(camera.rotation.y) * speed
+            }
+
+            // a
+            if(keypress[65]){
+                camera.position.x += Math.sin(camera.rotation.y + Math.PI/2) * speed
+                camera.position.z += -Math.cos(camera.rotation.y + Math.PI/2) * speed
+            }
+
+            // d
+            if(keypress[68]){
+                camera.position.x += Math.sin(camera.rotation.y - Math.PI/2) * speed
+                camera.position.z += -Math.cos(camera.rotation.y - Math.PI/2) * speed
+            }
+
+            // left
+            if(keypress[37]){
+                camera.rotation.y -= turnSpeed
+            }
+            // top
+            if(keypress[38]){
+                // group.rotation.x -= turnDeg * delta
+                // camera.rotation.x -= turnSpeed
+            }
+
+            // rigth
+            if(keypress[39]){
+                camera.rotation.y += turnSpeed
+            }
+
+            // down
+            if(keypress[40]){
+                // group.rotation.x += turnDeg * delta
+                // group.rotation.x += turnSpeed
+            }
+
+            // move eyes
+            // if(keypress[keyLeft]) group.rotateY(turnDeg * delta) // left
+            // if(keypress[keyRight]) group.rotateY(-turnDeg * delta) // right
+            // if(keypress[keyUp]) camera.rotation.x += turnDeg * delta // up
+            // if(keypress[keyDown]) camera.rotation.x += -turnDeg * delta // down
+
+            // // move position
+            // if(keypress[keyTurnUp]) group.translateZ(-speed * delta) // w
+            // if(keypress[keyTurnDown]) group.translateZ(speed * delta) // s
+            // if(keypress[keyTurnLeft]) group.translateX(-speed * delta) // a
+            // if(keypress[keyTurnRight]) group.translateX(speed * delta) // d
+        }
+    }
+
+    class Weapen {
+        constructor(opt = {}) {
+            this.weapenMesh = opt.weapenMesh
+            this.speed = opt.speed || 10
+            this.cd = opt.cd || 10
+            this.init()
+            this.animate()
+        }
+
+        init() {
+            const {weapenMesh} = this
+            weapenMesh.scale.set(10, 10, 10)
+        }
+
+        animate() {
+            const {weapenMesh, player} = this
+
+            weapenMesh.position.set(
+                    camera.position.x - Math.sin(camera.rotation.y + Math.PI/6 ) * 0.75,
+                    camera.position.y - 0.5 + Math.sin(Date.now() * 0.0005 * 4 + camera.position.x + camera.position.y) * 0.01,
+                    camera.position.z + Math.cos(camera.rotation.y + Math.PI/6) * 0.75,
+                )
+
+            weapenMesh.rotation.set(
+                camera.rotation.x,
+                camera.rotation.y - Math.PI,
+                camera.rotation.z
+            )
+        }
+    }
+
+    class Monster {}
+
+    const animate = () => {
+        requestAnimationFrame(animate)
+
+        animates.forEach(model => {
+            model.animate()
+        })
+
+        renderer.render(scene, camera)
+    }
+
+
+    // run start
+
+    let player1
+    let weapen1
+    let weapenLoader
+
+    player1 = new Player()
+    player1.init()
+
+    weapenLoader = new ModelManger(models)
+
+    weapenLoader.manger.onLoad = () => {
+        weapen1 = new Weapen({
+            player: player1,
+            weapenMesh: weapenLoader.meshs['uzi']
+        })
+        animates.push(weapen1)
+    }
+
+    animates.push(player1)
+
+    meshs['monster'].position.y += 3
+    scene.add(meshs['monster'])
+
+    meshs['floor'].rotation.x -= Math.PI /2
+    scene.add(meshs['floor'])
+
+    meshs['rootSquare'].translateY(12)
+    scene.add(meshs['rootSquare'])
+
+
+    animate()
+
+
+
+
+</script>
+
+</html>
