@@ -57,18 +57,10 @@
   })
 
   let meshs = {
-    rootSquare: new THREE.Mesh(new THREE.BoxGeometry(50, 25, 50, 10, 10, 10), new THREE.MeshBasicMaterial({
-      color: "gray",
-      wireframe: true
-    })),
-    floor: new THREE.Mesh(new THREE.PlaneGeometry(50, 50, 10, 10), new THREE.MeshPhongMaterial({
-      color: 0xffffff,
-      wireframe: false
-    })),
-    monster: new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({
-      color: 0xff0000,
-      wireframe: false
-    }))
+    rootSquare: new THREE.Mesh(new THREE.BoxGeometry(50, 25, 50, 10, 10, 10), new THREE.MeshBasicMaterial({color: "gray",wireframe: true})),
+    floor: new THREE.Mesh(new THREE.PlaneGeometry(50, 50, 10, 10), new THREE.MeshPhongMaterial({color: 0xffffff,wireframe: false})),
+    monster: new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({color: 0xff0000,wireframe: false})),
+    monster2: new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({color: 0xffff00,wireframe: false}))
   }
 
   let models = [{
@@ -126,81 +118,66 @@
     }
 
     init() {
-      // const {group} = this
-      // group.add(camera)
-      // scene.add(group)
+      const {group} = this
+      group.add(camera)
+      scene.add(group)
     }
 
-    animate() {
-      const {
-        keyUp,
-        keyDown,
-        keyLeft,
-        keyRight,
-        keyTurnUp,
-        keyTurnDown,
-        keyTurnLeft,
-        keyTurnRight
-      } = this
-      const {
-        speed,
-        turnDeg,
-        turnSpeed
-      } = this
-      const {
-        group
-      } = this
+    animate(delta) {
+      const { keyUp, keyDown, keyLeft, keyRight, keyTurnUp, keyTurnDown, keyTurnLeft, keyTurnRight } = this
+      const { speed, turnDeg, turnSpeed } = this
+      const { group } = this
 
-      // w
-      if (keypress[87]) {
-        camera.position.x -= Math.sin(camera.rotation.y) * speed
-        camera.position.z -= -Math.cos(camera.rotation.y) * speed
-      }
+      // // w
+      // if (keypress[87]) {
+      //   camera.position.x -= Math.sin(camera.rotation.y) * speed
+      //   camera.position.z -= -Math.cos(camera.rotation.y) * speed
+      // }
 
-      // s
-      if (keypress[83]) {
-        camera.position.x += Math.sin(camera.rotation.y) * speed
-        camera.position.z += -Math.cos(camera.rotation.y) * speed
-      }
+      // // s
+      // if (keypress[83]) {
+      //   camera.position.x += Math.sin(camera.rotation.y) * speed
+      //   camera.position.z += -Math.cos(camera.rotation.y) * speed
+      // }
 
-      // a
-      if (keypress[65]) {
-        camera.position.x += Math.sin(camera.rotation.y + Math.PI / 2) * speed
-        camera.position.z += -Math.cos(camera.rotation.y + Math.PI / 2) * speed
-      }
+      // // a
+      // if (keypress[65]) {
+      //   camera.position.x += Math.sin(camera.rotation.y + Math.PI / 2) * speed
+      //   camera.position.z += -Math.cos(camera.rotation.y + Math.PI / 2) * speed
+      // }
 
-      // d
-      if (keypress[68]) {
-        camera.position.x += Math.sin(camera.rotation.y - Math.PI / 2) * speed
-        camera.position.z += -Math.cos(camera.rotation.y - Math.PI / 2) * speed
-      }
+      // // d
+      // if (keypress[68]) {
+      //   camera.position.x += Math.sin(camera.rotation.y - Math.PI / 2) * speed
+      //   camera.position.z += -Math.cos(camera.rotation.y - Math.PI / 2) * speed
+      // }
 
-      // left
-      if (keypress[37]) {
-        camera.rotation.y -= turnSpeed
-      }
-      // top
-      if (keypress[38]) {
-        // group.rotation.x -= turnDeg * delta
-        // camera.rotation.x -= turnSpeed
-      }
+      // // left
+      // if (keypress[37]) {
+      //   camera.rotation.y -= turnSpeed
+      // }
+      // // top
+      // if (keypress[38]) {
+      //   // group.rotation.x -= turnDeg * delta
+      //   // camera.rotation.x -= turnSpeed
+      // }
 
-      // rigth
-      if (keypress[39]) {
-        camera.rotation.y += turnSpeed
-      }
+      // // rigth
+      // if (keypress[39]) {
+      //   camera.rotation.y += turnSpeed
+      // }
 
-      // down
-      if (keypress[40]) {
-        // group.rotation.x += turnDeg * delta
-        // group.rotation.x += turnSpeed
-      }
+      // // down
+      // if (keypress[40]) {
+      //   // group.rotation.x += turnDeg * delta
+      //   // group.rotation.x += turnSpeed
+      // }
 
       // move eyes
-      // if(keypress[keyLeft]) group.rotateY(turnDeg * delta) // left
-      // if(keypress[keyRight]) group.rotateY(-turnDeg * delta) // right
-      // if(keypress[keyUp]) camera.rotation.x += turnDeg * delta // up
-      // if(keypress[keyDown]) camera.rotation.x += -turnDeg * delta // down
+      if(keypress[keyTurnLeft]) group.rotateY(turnDeg * delta) // left
+      if(keypress[keyTurnRight]) group.rotateY(-turnDeg * delta) // right
+      if(keypress[keyTurnUp]) camera.rotation.x += turnDeg * delta // up
+      if(keypress[keyTurnDown]) camera.rotation.x += -turnDeg * delta // down
 
       // // move position
       // if(keypress[keyTurnUp]) group.translateZ(-speed * delta) // w
@@ -213,6 +190,7 @@
   class Weapen {
     constructor(opt = {}) {
       this.weapenMesh = opt.weapenMesh
+      this.player = opt.player
       this.speed = opt.speed || 10
       this.cd = opt.cd || 10
       this.init()
@@ -220,29 +198,40 @@
     }
 
     init() {
-      const {
-        weapenMesh
-      } = this
+      const { weapenMesh } = this
       weapenMesh.scale.set(10, 10, 10)
     }
 
     animate() {
-      const {
-        weapenMesh,
-        player
-      } = this
+      const { weapenMesh, player} = this
+
 
       weapenMesh.position.set(
-        camera.position.x - Math.sin(camera.rotation.y + Math.PI / 6) * 0.75,
-        camera.position.y - 0.5 + Math.sin(Date.now() * 0.0005 * 4 + camera.position.x + camera.position.y) * 0.01,
-        camera.position.z + Math.cos(camera.rotation.y + Math.PI / 6) * 0.75,
+        player.group.position.x,
+        player.group.position.y + 2,
+        player.group.position.z * player.group.rotation.y
       )
 
-      weapenMesh.rotation.set(
-        camera.rotation.x,
-        camera.rotation.y - Math.PI,
-        camera.rotation.z
-      )
+      console.log(player.group.rotation.y)
+      // console.log(player.group.position.z)
+
+      // weapenMesh.rotation.set(
+      //   camera.rotation.x,
+      //   camera.rotation.y - Math.PI,
+      //   camera.rotation.z
+      // )
+
+      // weapenMesh.position.set(
+      //   camera.position.x - Math.sin(camera.rotation.y + Math.PI / 6) * 0.75,
+      //   camera.position.y - 0.5 + Math.sin(Date.now() * 0.0005 * 4 + camera.position.x + camera.position.y) * 0.01,
+      //   camera.position.z + Math.cos(camera.rotation.y + Math.PI / 6) * 0.75,
+      // )
+
+      // weapenMesh.rotation.set(
+      //   camera.rotation.x,
+      //   camera.rotation.y - Math.PI,
+      //   camera.rotation.z
+      // )
     }
   }
 
@@ -252,7 +241,7 @@
     requestAnimationFrame(animate)
 
     animates.forEach(model => {
-      model.animate()
+      model.animate(clock.getDelta())
     })
 
     renderer.render(scene, camera)
@@ -280,8 +269,25 @@
 
   animates.push(player1)
 
-  meshs['monster'].position.y += 3
+
+  const test = () => {
+    requestAnimationFrame(test)
+    meshs['monster'].rotateY(THREE.Math.degToRad(45) * clock.getDelta())
+    console.log(meshs['monster'].rotation.y)
+    meshs['monster2'].position.set(
+      meshs['monster'].position.x + Math.cos(meshs['monster'].rotation.y),
+      meshs['monster'].position.y,
+      meshs['monster'].position.z + Math.sin(meshs['monster'].rotation.y)
+    )
+
+    renderer.render(scene, camera)
+  }
+
+// test()
+
   scene.add(meshs['monster'])
+  scene.add(meshs['monster2'])
+
 
   meshs['floor'].rotation.x -= Math.PI / 2
   scene.add(meshs['floor'])
@@ -290,7 +296,7 @@
   scene.add(meshs['rootSquare'])
 
 
-  animate()
+   animate()
 </script>
 
 </html>
